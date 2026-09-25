@@ -1,0 +1,48 @@
+name: Build and Deploy to Azure Web App (Sevethon-Youth-AIF)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Build React Client Frontend
+        run: |
+          cd client
+          npm ci
+          npm run build
+
+      - name: Copy Client Build to Server Static Assets
+        run: |
+          mkdir -p server/client/dist
+          cp -r client/dist/* server/client/dist/
+
+      - name: Install Server Production Dependencies
+        run: |
+          cd server
+          npm ci --only=production
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'Sevethon-Youth-AIF'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: './server'
