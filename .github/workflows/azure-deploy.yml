@@ -27,7 +27,7 @@ jobs:
       - name: Build React Client Frontend
         run: |
           cd client
-          npm ci
+          npm install
           npm run build
 
       - name: Copy Client Build to Server Static Assets
@@ -38,7 +38,7 @@ jobs:
       - name: Install Server Production Dependencies
         run: |
           cd server
-          npm ci --only=production
+          npm install --production
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
